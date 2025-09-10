@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import LearningRecommendations from "@/components/LearningRecommendations";
 import {
   Brain,
   TrendingUp,
@@ -18,7 +19,9 @@ import {
   Clock,
   ExternalLink,
   Download,
-  Play
+  Play,
+  ArrowRight,
+  Map
 } from "lucide-react";
 
 interface UserData {
@@ -30,6 +33,8 @@ interface UserData {
 
 interface DashboardProps {
   userData: UserData;
+  onNavigate?: (view: "dashboard" | "simulator" | "learning") => void;
+  currentView?: "dashboard" | "simulator" | "learning";
 }
 
 const careerPaths = [
@@ -107,8 +112,8 @@ const courses = [
   }
 ];
 
-export default function Dashboard({ userData }: DashboardProps) {
-  const [activeTab, setActiveTab] = useState("overview");
+export default function Dashboard({ userData, onNavigate, currentView = "dashboard" }: DashboardProps) {
+  const [activeTab, setActiveTab] = useState(currentView === "learning" ? "learning" : "overview");
 
   const overallProgress = Math.round(
     skillsData.reduce((acc, skill) => acc + (skill.current / skill.required) * 100, 0) / skillsData.length
@@ -144,7 +149,12 @@ export default function Dashboard({ userData }: DashboardProps) {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={(value) => {
+          setActiveTab(value);
+          if (value === "learning" && onNavigate) {
+            onNavigate("learning");
+          }
+        }} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="skills">Skills</TabsTrigger>
@@ -336,14 +346,18 @@ export default function Dashboard({ userData }: DashboardProps) {
                     </div>
 
                     <div className="flex gap-2">
-                      <Button variant="hero" size="sm">
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        View Jobs
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Download className="w-4 h-4 mr-2" />
-                        Get Roadmap
-                      </Button>
+                        <Button variant="hero" size="sm">
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          View Jobs
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => onNavigate?.("simulator")}
+                        >
+                          <Map className="w-4 h-4 mr-2" />
+                          View Roadmap
+                        </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -352,53 +366,7 @@ export default function Dashboard({ userData }: DashboardProps) {
           </TabsContent>
 
           <TabsContent value="learning" className="space-y-6">
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-primary" />
-                  Recommended Learning Path
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {courses.map((course, index) => (
-                    <div key={course.title} className="border rounded-lg p-4 hover:shadow-card transition-all">
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-semibold">{course.title}</h3>
-                            <Badge 
-                              variant={course.urgency === "High Priority" ? "destructive" : 
-                                     course.urgency === "Medium Priority" ? "warning" : "secondary"}
-                              className="text-xs"
-                            >
-                              {course.urgency}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {course.provider} • {course.duration} • ⭐ {course.rating} ({course.students} students)
-                          </p>
-                          <div className="flex gap-1">
-                            {course.skillsGained.map(skill => (
-                              <Badge key={skill} variant="skill" className="text-xs">
-                                {skill}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="text-right space-y-2">
-                          <p className="font-bold text-primary">{course.price}</p>
-                          <Button variant="outline" size="sm">
-                            <Play className="w-4 h-4 mr-2" />
-                            Start Course
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <LearningRecommendations />
           </TabsContent>
 
           <TabsContent value="tools" className="space-y-6">
