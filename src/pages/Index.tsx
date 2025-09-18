@@ -1,33 +1,74 @@
 import { useState } from "react";
-import Onboarding from "@/components/Onboarding";
+import LandingPage from "@/components/LandingPage";
+import EnhancedOnboarding from "@/components/EnhancedOnboarding";
 import Dashboard from "@/components/Dashboard";
 import CareerSimulator from "@/components/CareerSimulator";
 import LearningRecommendations from "@/components/LearningRecommendations";
+import RoadmapGenerator from "@/components/RoadmapGenerator";
 import ChatAssistant from "@/components/ChatAssistant";
 
-const Index = () => {
-  const [userData, setUserData] = useState(null);
-  const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
-  const [currentView, setCurrentView] = useState<"dashboard" | "simulator" | "learning">("dashboard");
+type UserData = {
+  name: string;
+  mode: 'education' | 'career';
+  level: string;
+  skills: string[];
+  interests: string[];
+  learningStyle?: string;
+  experience?: string;
+};
 
-  const handleOnboardingComplete = (data: any) => {
-    setUserData(data);
-    setIsOnboardingComplete(true);
+type View = "landing" | "onboarding" | "dashboard" | "simulator" | "learning" | "roadmap";
+
+const Index = () => {
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [currentView, setCurrentView] = useState<View>("landing");
+  const [selectedMode, setSelectedMode] = useState<'education' | 'career' | null>(null);
+
+  const handleModeSelect = (mode: 'education' | 'career') => {
+    setSelectedMode(mode);
+    setCurrentView("onboarding");
   };
 
-  if (!isOnboardingComplete) {
-    return <Onboarding onComplete={handleOnboardingComplete} />;
+  const handleOnboardingComplete = (data: UserData) => {
+    setUserData(data);
+    setCurrentView("dashboard");
+  };
+
+  const handleViewChange = (view: View) => {
+    setCurrentView(view);
+  };
+
+  if (currentView === "landing") {
+    return <LandingPage onModeSelect={handleModeSelect} />;
+  }
+
+  if (currentView === "onboarding") {
+    return (
+      <EnhancedOnboarding 
+        mode={selectedMode!} 
+        onComplete={handleOnboardingComplete} 
+      />
+    );
   }
 
   if (currentView === "simulator") {
     return <CareerSimulator onBack={() => setCurrentView("dashboard")} />;
   }
 
+  if (currentView === "roadmap") {
+    return (
+      <RoadmapGenerator 
+        userData={userData!} 
+        onBack={() => setCurrentView("dashboard")} 
+      />
+    );
+  }
+
   return (
     <>
       <Dashboard 
-        userData={userData} 
-        onNavigate={setCurrentView}
+        userData={userData!} 
+        onNavigate={handleViewChange}
         currentView={currentView}
       />
       <ChatAssistant />

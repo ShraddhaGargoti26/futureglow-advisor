@@ -26,15 +26,20 @@ import {
 
 interface UserData {
   name: string;
+  mode: 'education' | 'career';
+  level: string;
   skills: string[];
   interests: string[];
-  experience: string;
+  learningStyle?: string;
+  experience?: string;
 }
+
+type View = "landing" | "onboarding" | "dashboard" | "simulator" | "learning" | "roadmap";
 
 interface DashboardProps {
   userData: UserData;
-  onNavigate?: (view: "dashboard" | "simulator" | "learning") => void;
-  currentView?: "dashboard" | "simulator" | "learning";
+  onNavigate?: (view: View) => void;
+  currentView?: View;
 }
 
 const careerPaths = [
@@ -350,10 +355,10 @@ export default function Dashboard({ userData, onNavigate, currentView = "dashboa
                           <ExternalLink className="w-4 h-4 mr-2" />
                           View Jobs
                         </Button>
-                        <Button 
+                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => onNavigate?.("simulator")}
+                          onClick={() => onNavigate?.("roadmap")}
                         >
                           <Map className="w-4 h-4 mr-2" />
                           View Roadmap
